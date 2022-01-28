@@ -1024,6 +1024,11 @@
   resolved "https://npm.paquapp.com/@types%2fsemver/-/semver-7.3.9.tgz#152c6c20a7688c30b967ec1841d31ace569863fc"
   integrity sha1-FSxsIKdojDC5Z+wYQdMazlaYY/w=
 
+"@types/three@^0.137.0":
+  version "0.137.0"
+  resolved "https://npm.paquapp.com/@types%2fthree/-/three-0.137.0.tgz#6047e0658262b4de7c464a40288f9071ddd9a6d5"
+  integrity sha512-Xc5EAlfYmgrCLI/VlSVqiRJAtzhWF0Rw2jSq48nqJy+Hcb5sfDOXyfZn1+RNcHyi9l8CeCAXCZygO8IyeOJVEA==
+
 "@yarn-tool/resolve-package@^1.0.36":
   version "1.0.42"
   resolved "https://npm.paquapp.com/@yarn-tool%2fresolve-package/-/resolve-package-1.0.42.tgz#4a72c1a77b7035dc86250744d2cdbc16292bc4f8"
@@ -2432,6 +2437,11 @@ terser@^5.0.0:
     commander "^2.20.0"
     source-map "~0.7.2"
     source-map-support "~0.5.20"
+
+three@^0.137.4:
+  version "0.137.4"
+  resolved "https://npm.paquapp.com/three/-/three-0.137.4.tgz#ec73b6a6c40b733d56544b13d0c3cdb0bce5d0a7"
+  integrity sha512-kUyOZNX+dMbvaS0mGYM1BaXHkHVNQdpryWH8dBg3mn725dJcTo9/5rjyH+OJ8V0r+XbZPz7sncV+c3Gjpc9UBA==
 
 timsort@^0.3.0:
   version "0.3.0"
