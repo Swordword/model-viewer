@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 const onLoad = () => {}
 const onProgress = () => {}
@@ -9,27 +10,24 @@ const onError = (error: Error) => {
 }
 
 class Foo {
-  dom: any
   type: any
   file: any
-  scene: new THREE.Scene()
-  canvas: any
-  renderer: any
-  container: any
-  camera: any
+  scene: THREE.Scene
+  canvas: HTMLCanvasElement
+  renderer: THREE.WebGLRenderer
+  camera: THREE.PerspectiveCamera
+  rootModel: THREE.Group | undefined
+  controls: OrbitControls | undefined
+  clock: THREE.Clock | undefined
+  animationFrame: number | undefined
   constructor(config: any) {
     const { dom, type, file } = config
-    const canvas = dom
-    this.canvas = canvas
-    this.container = canvas
     this.type = type
     this.file = file
-    this.init()
-  }
-  init() {
-    // const scene = new THREE.Scene()
-    // this.scene = scene
-    const renderer = new THREE.WebGLRenderer({
+    this.scene = new THREE.Scene()
+    this.canvas = dom
+    // init渲染器
+    this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       // 执行抗锯齿
       antialias: true,
@@ -38,43 +36,113 @@ class Foo {
       // 设置为可缓存
       preserveDrawingBuffer: true,
     })
-    this.renderer = renderer
-  }
-  initCamera() {
+    // init相机
     const camera = new THREE.PerspectiveCamera(
       45,
-      this.container.offsetWidth / this.container.offsetHeight,
+      this.canvas.offsetWidth / this.canvas.offsetHeight,
       0.1,
       1000
     )
     camera.position.set(0, 10, 20)
     this.camera = camera
-  }
-  initLight() {
-    const ambientLight = new THREE.AmbientLight('#ffffff', 1)
-    this.scene.add(ambientLight)
-  }
-  render() {
-    this.renderer.render(this.scene, this.camera)
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame)
+    }
   }
   load() {
     const loader = new GLTFLoader()
+    const _this = this
     loader.load(
       this.file,
       (gltf) => {
-        console.log('gltf', gltf)
-        this.scene.add(gltf.scene)
-        // 初始化相机
-        this.initCamera()
-        // 初始化光源
-        this.initLight()
-        this.render()
+        console.log('gltf.scene', gltf.scene)
+        const root = gltf.scene
+        _this.rootModel = root
+        _this.scene.add(root)
+        _this.initLight()
+        _this.updateCamera()
+        _this.initControls()
+        _this.render()
       },
       onProgress,
       (error) => {
         console.error(error)
       }
     )
+  }
+  /** 根据模型的尺寸调整相机的位置及视距 */
+  frameArea(
+    sizeToFitOnScreen: number,
+    boxSize: number,
+    boxCenter: THREE.Vector3,
+    camera: THREE.PerspectiveCamera
+  ) {
+    const halfSizeToFitOnScreen = sizeToFitOnScreen * 0.5
+    const halfFovY = THREE.MathUtils.degToRad(camera.fov * 0.5)
+    const distance = halfSizeToFitOnScreen / Math.tan(halfFovY)
+    const direction = new THREE.Vector3()
+      .subVectors(camera.position, boxCenter)
+      .multiply(new THREE.Vector3(1, 0, 1))
+      .normalize()
+    camera.position.copy(direction.multiplyScalar(distance).add(boxCenter))
+    camera.near = boxSize / 1000
+    camera.far = boxSize * 1000
+    camera.updateProjectionMatrix()
+    camera.lookAt(boxCenter.x, boxCenter.y, boxCenter.z)
+  }
+  /** 更新相机 */
+  updateCamera() {
+    const camera = this.camera!
+    const root = this.rootModel!
+    const box = new THREE.Box3().setFromObject(root)
+    const boxSize = box.getSize(new THREE.Vector3()).length()
+    const boxCenter = box.getCenter(new THREE.Vector3())
+    this.frameArea(boxSize * 1.2, boxSize, boxCenter, camera)
+  }
+  initLight() {
+    const ambientLight = new THREE.AmbientLight('#ffffff', 1)
+    this.scene.add(ambientLight)
+  }
+  initControls() {
+    const root = this.rootModel!
+    // 获取模型的尺寸
+    const box = new THREE.Box3().setFromObject(root)
+    const boxSize = box.getSize(new THREE.Vector3()).length()
+    const boxCenter = box.getCenter(new THREE.Vector3())
+    console.log('boxSize 添加成功', boxSize)
+    console.log('boxCenter 添加成功', boxCenter)
+    const orbitControl = new OrbitControls(
+      this.camera,
+      this.renderer.domElement
+    )
+    // 设置控制器最远距离与目标
+    orbitControl.maxDistance = boxSize * 10
+    orbitControl.target.copy(boxCenter)
+    orbitControl.update()
+    // 控制器中心
+    this.controls = orbitControl
+    // 用于更新轨道控制器
+    this.clock = new THREE.Clock()
+  }
+  // 刷新渲染器至图布
+  resizeRendererToDisplaySize(renderer: THREE.WebGLRenderer) {
+    const canvas = this.canvas
+    const width = canvas.clientWidth
+    const height = canvas.clientHeight
+    const needResize = canvas.width !== width || canvas.height !== height
+    if (needResize) {
+      renderer.setSize(width, height, false)
+    }
+    return needResize
+  }
+  render() {
+    if (this.resizeRendererToDisplaySize(this.renderer)) {
+      const canvas = this.canvas
+      this.camera.aspect = canvas.clientWidth / canvas.clientHeight
+      this.camera.updateProjectionMatrix()
+    }
+    this.renderer.render(this.scene, this.camera!)
+    this.animationFrame = requestAnimationFrame(this.render.bind(this))
   }
 }
 

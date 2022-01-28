@@ -14,7 +14,6 @@ const ModelViewer = () => {
   }, [])
   return (
     <div>
-      hello
       <canvas className='container' ref={ref}></canvas>
     </div>
   )
