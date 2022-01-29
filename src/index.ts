@@ -9,17 +9,17 @@ const onError = (error: Error) => {
   console.error(error.message)
 }
 
-class Foo {
-  type: any
-  file: any
-  scene: THREE.Scene
-  canvas: HTMLCanvasElement
-  renderer: THREE.WebGLRenderer
-  camera: THREE.PerspectiveCamera
-  rootModel: THREE.Group | undefined
-  controls: OrbitControls | undefined
-  clock: THREE.Clock | undefined
-  animationFrame: number | undefined
+class Model {
+  protected type: any
+  protected file: any
+  protected scene: THREE.Scene
+  protected canvas: HTMLCanvasElement
+  protected renderer: THREE.WebGLRenderer
+  protected camera: THREE.PerspectiveCamera
+  protected rootModel: THREE.Group | undefined
+  protected controls: OrbitControls | undefined
+  protected clock: THREE.Clock | undefined
+  protected animationFrame: number | undefined
   constructor(config: any) {
     const { dom, type, file } = config
     this.type = type
@@ -51,18 +51,16 @@ class Foo {
   }
   load() {
     const loader = new GLTFLoader()
-    const _this = this
     loader.load(
       this.file,
       (gltf) => {
-        console.log('gltf.scene', gltf.scene)
         const root = gltf.scene
-        _this.rootModel = root
-        _this.scene.add(root)
-        _this.initLight()
-        _this.updateCamera()
-        _this.initControls()
-        _this.render()
+        this.rootModel = root
+        this.scene.add(root)
+        this.initLight()
+        this.updateCamera()
+        this.initControls()
+        this.render()
       },
       onProgress,
       (error) => {
@@ -146,4 +144,4 @@ class Foo {
   }
 }
 
-export { Foo }
+export { Model }
