@@ -1,5 +1,5 @@
 {
-  "name": "model-viewer",
+  "name": "@swordword/model-viewer",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
