@@ -24,9 +24,9 @@
 import {Model} from '@swordword/model-viewer'
 const canvas = document.getElementById('c')
 const model = new Model({
-    dom: ref.current,
+    dom: canvas,
     type:'gltf',
-		file: 'https://gltf-file-address'
+    file: 'https://gltf-file-address'
   })
 model.load() 
 ```
